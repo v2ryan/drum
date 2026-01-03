@@ -7,14 +7,14 @@ class FloatingBackground {
     constructor() {
         this.canvas = document.getElementById('bg-canvas');
         if (!this.canvas) return;
-        
+
         this.ctx = this.canvas.getContext('2d');
         this.blobs = [];
         this.count = 15;
         this.resize();
         this.init();
         this.animate();
-        
+
         window.addEventListener('resize', () => this.resize());
     }
 
@@ -38,7 +38,7 @@ class FloatingBackground {
 
     animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         this.blobs.forEach(blob => {
             blob.x += blob.vx;
             blob.y += blob.vy;
@@ -61,10 +61,44 @@ class FloatingBackground {
     }
 }
 
+// Mobile Menu Control
+class MobileMenu {
+    constructor() {
+        this.toggle = document.querySelector('.nav-toggle');
+        this.navLinks = document.querySelector('.nav-links');
+        if (!this.toggle || !this.navLinks) return;
+
+        this.toggle.addEventListener('click', () => this.toggleMenu());
+
+        // Close menu when a link is clicked
+        this.navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => this.closeMenu());
+        });
+
+        // Close on escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.closeMenu();
+        });
+    }
+
+    toggleMenu() {
+        this.toggle.classList.toggle('active');
+        this.navLinks.classList.toggle('active');
+        document.body.style.overflow = this.navLinks.classList.contains('active') ? 'hidden' : '';
+    }
+
+    closeMenu() {
+        this.toggle.classList.remove('active');
+        this.navLinks.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
 // Global UI Initialization
 document.addEventListener('DOMContentLoaded', () => {
     new FloatingBackground();
-    
+    new MobileMenu();
+
     // Active link highlighting
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-links a').forEach(link => {
@@ -81,16 +115,16 @@ function playTone(freq = 440, type = 'sine', duration = 0.1) {
     }
     const osc = window.audioCtx.createOscillator();
     const gain = window.audioCtx.createGain();
-    
+
     osc.type = type;
     osc.frequency.setValueAtTime(freq, window.audioCtx.currentTime);
-    
+
     gain.gain.setValueAtTime(0.1, window.audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0001, window.audioCtx.currentTime + duration);
-    
+
     osc.connect(gain);
     gain.connect(window.audioCtx.destination);
-    
+
     osc.start();
     osc.stop(window.audioCtx.currentTime + duration);
 }
