@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>節奏圖書館 | Zero-G Drum Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <div class="logo">Zero-G Drum Lab</div>
+        <ul class="nav-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="rudiments.html">基本功</a></li>
+            <li><a href="theory.html">樂理</a></li>
+            <li><a href="grooves.html">節奏</a></li>
+            <li><a href="sequencer.html">零重力練習器</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="card">
+            <h1>節奏圖書館 (Groove Library)</h1>
+            <p>1-2 級考試中常見的節奏風格。按下播放鍵聽聽看循環範例。</p>
+            <button id="start-audio-btn" style="margin-top: 1rem;">啟用音訊 (Start Audio)</button>
+        </section>
+
+        <div class="rudiment-grid">
+            <div class="card">
+                <h3>Rock / Pop (4/4 拍)</h3>
+                <p>最經典的 8 分音符節奏。大鼓在 1, 3 拍，小鼓在 2, 4 拍。</p>
+                <button onclick="playGroove('rock')">播放 Rock Loop</button>
+            </div>
+
+            <div class="card">
+                <h3>Waltz (3/4 拍)</h3>
+                <p>圓舞曲節奏，強弱弱規律。常見於 ABRSM Grade 1 選曲。</p>
+                <button onclick="playGroove('waltz')">播放 Waltz Loop</button>
+            </div>
+
+            <div class="card">
+                <h3>Funk (同步切分音)</h3>
+                <p>Grade 2 開始接觸的切分音節奏，較多 16 分音符變化。</p>
+                <button onclick="playGroove('funk')">播放 Funk Loop</button>
+            </div>
+        </div>
+
+        <button onclick="stopAll()" style="margin-top: 2rem; background: #666;">停止所有播放</button>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Zero-G Drum Lab. 節奏感是鼓手的靈魂。</p>
+    </footer>
+
+    <script src="common.js"></script>
+    <script>
+        let currentLoop = null;
+        let isAudioStarted = false;
+
+        document.getElementById('start-audio-btn').addEventListener('click', async () => {
+            await Tone.start();
+            isAudioStarted = true;
+            document.getElementById('start-audio-btn').innerText = "音訊已啟用 ✅";
+            document.getElementById('start-audio-btn').disabled = true;
+        });
+
+        const kick = new Tone.MembraneSynth().toDestination();
+        const snare = new Tone.NoiseSynth({
+            noise: { type: 'white' },
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+        }).toDestination();
+        const hihat = new Tone.MetalSynth({
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0 }
+        }).toDestination();
+
+        function playGroove(style) {
+            if (!isAudioStarted) {
+                alert("請先點擊『啟用音訊』按鈕！");
+                return;
+            }
+            stopAll();
+            Tone.Transport.cancel();
+            Tone.Transport.bpm.value = 100;
+
+            if (style === 'rock') {
+                currentLoop = new Tone.Loop((time) => {
+                    hihat.triggerAttackRelease("32n", time);
+                    if (Tone.Transport.getTicksAtTime(time) % (Tone.TicksPerQuarter * 2) === 0) {
+                        kick.triggerAttackRelease("C1", "8n", time);
+                    } else if (Tone.Transport.getTicksAtTime(time) % Tone.TicksPerQuarter === 0) {
+                        snare.triggerAttackRelease("16n", time);
+                    }
+                }, "8n").start(0);
+            } else if (style === 'waltz') {
+                Tone.Transport.timeSignature = [3, 4];
+                currentLoop = new Tone.Loop((time) => {
+                    const beat = Math.floor(Tone.Transport.getSecondsAtTime(time) * 10) % 3; // Simplified
+                    kick.triggerAttackRelease("C1", "8n", time);
+                    snare.triggerAttackRelease("16n", time + Tone.Time("4n"));
+                    snare.triggerAttackRelease("16n", time + Tone.Time("4n") * 2);
+                }, "2.n").start(0);
+            } else if (style === 'funk') {
+                currentLoop = new Tone.Loop((time) => {
+                    hihat.triggerAttackRelease("32n", time);
+                    // Add some funk logic here if needed
+                }, "16n").start(0);
+                // Simple rock for now to demonstrate
+            }
+
+            Tone.Transport.start();
+        }
+
+        function stopAll() {
+            Tone.Transport.stop();
+            if (currentLoop) {
+                currentLoop.dispose();
+                currentLoop = null;
+            }
+        }
+    </script>
+</body>
+
+</html>

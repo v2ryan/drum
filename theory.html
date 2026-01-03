@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>樂理站 | Zero-G Drum Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        .staff-line {
+            height: 2px;
+            background: var(--text-color);
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .note-marker {
+            width: 20px;
+            height: 15px;
+            background: var(--primary-neon);
+            border-radius: 50%;
+            position: absolute;
+            transform: translateY(-50%);
+            box-shadow: 0 0 10px var(--primary-neon);
+        }
+
+        .drum-key-grid {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .drum-item {
+            text-align: center;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .drum-item:hover {
+            border-color: var(--secondary-neon);
+            background: rgba(255, 0, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <div class="logo">Zero-G Drum Lab</div>
+        <ul class="nav-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="rudiments.html">基本功</a></li>
+            <li><a href="theory.html">樂理</a></li>
+            <li><a href="grooves.html">節奏</a></li>
+            <li><a href="sequencer.html">零重力練習器</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="card">
+            <h1>樂理站 (Notation Station)</h1>
+            <p>了解爵士鼓在五線譜上的位置。爵士鼓使用「中音譜號」或特定的鼓譜標記。</p>
+            <button id="audio-init-btn" style="margin-top: 1rem;">1. 啟用音訊 (Enable Sound)</button>
+        </section>
+
+        <section class="card">
+            <h2>鼓組位置圖 (Drum Key)</h2>
+            <p style="font-size: 0.8rem; margin-bottom: 1rem; color: #888;">點擊下方的鼓組或五線譜上的音符來聽聲。</p>
+            <div style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+                <!-- Simple visual represention of staff -->
+                <div class="staff-line"></div>
+                <div class="staff-line">
+                    <div class="note-marker" style="left: 20%; cursor: pointer;" title="Hi-Hat"
+                        onclick="playDrum('hihat')"></div>
+                </div>
+                <div class="staff-line">
+                    <div class="note-marker" style="left: 50%; background: var(--secondary-neon); cursor: pointer;"
+                        title="Snare" onclick="playDrum('snare')"></div>
+                </div>
+                <div class="staff-line"></div>
+                <div class="staff-line">
+                    <div class="note-marker" style="left: 80%; background: var(--accent-neon); cursor: pointer;"
+                        title="Bass Drum" onclick="playDrum('kick')"></div>
+                </div>
+            </div>
+
+            <div class="drum-key-grid">
+                <div class="drum-item" onclick="playDrum('hihat')">
+                    <h3>Hi-Hat (踏鈸)</h3>
+                    <p>頂部 (X 標記)</p>
+                </div>
+                <div class="drum-item" onclick="playDrum('snare')">
+                    <h3>Snare (小鼓)</h3>
+                    <p>中間線</p>
+                </div>
+                <div class="drum-item" onclick="playDrum('kick')">
+                    <h3>Bass Drum (大鼓)</h3>
+                    <p>底部線</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>音符數值 (Note Values)</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px;">
+                    <h3>Whole Note (全音符)</h3>
+                    <p>4 拍</p>
+                </div>
+                <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px;">
+                    <h3>Half Note (二分音符)</h3>
+                    <p>2 拍</p>
+                </div>
+                <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px;">
+                    <h3>Quarter Note (四分音符)</h3>
+                    <p>1 拍</p>
+                </div>
+                <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px;">
+                    <h3>Eighth Note (八分音符)</h3>
+                    <p>1/2 拍</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Zero-G Drum Lab. 看懂譜，走得遠。</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="common.js"></script>
+    <script>
+        let isStarted = false;
+        const kick = new Tone.MembraneSynth().toDestination();
+        const snare = new Tone.NoiseSynth({
+            noise: { type: 'white' },
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+        }).toDestination();
+        const hihat = new Tone.MetalSynth({
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0 }
+        }).toDestination();
+
+        document.getElementById('audio-init-btn').addEventListener('click', async () => {
+            await Tone.start();
+            isStarted = true;
+            document.getElementById('audio-init-btn').innerText = "音訊已就緒 ✅";
+            document.getElementById('audio-init-btn').style.background = "#00c853";
+        });
+
+        function playDrum(type) {
+            if (!isStarted) {
+                alert("請先點擊『啟用音訊』按鈕！");
+                return;
+            }
+            if (type === 'kick') kick.triggerAttackRelease("C1", "8n");
+            if (type === 'snare') snare.triggerAttackRelease("16n");
+            if (type === 'hihat') hihat.triggerAttackRelease("32n");
+        }
+    </script>
+</body>
+
+</html>

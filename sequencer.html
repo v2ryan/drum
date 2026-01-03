@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>零重力練習器 | Zero-G Drum Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- CDN Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <div class="logo">Zero-G Drum Lab</div>
+        <ul class="nav-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="rudiments.html">基本功</a></li>
+            <li><a href="theory.html">樂理</a></li>
+            <li><a href="grooves.html">節奏</a></li>
+            <li><a href="sequencer.html">零重力練習器</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="card">
+            <h1>「零重力」音序器 (Zero-G Sequencer)</h1>
+            <p>這是一個基於物理引擎的節奏生成器。球體在真空中會永久反彈，撞擊不同的邊緣會觸發鼓聲。</p>
+
+            <div class="controls">
+                <button id="start-btn">1. 啟動引擎 (Start)</button>
+                <button id="clear-btn" style="background: #444;">清除球體 (Clear)</button>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                    <label>初始速度 (Velocity):</label>
+                    <input type="range" id="speed-slider" min="5" max="25" value="12">
+                </div>
+            </div>
+        </section>
+
+        <div id="sequencer-container">
+            <!-- Matter.js Canvas will be injected here -->
+        </div>
+
+        <section class="card" style="margin-top: 2rem;">
+            <h3>使用指南:</h3>
+            <ol>
+                <li>點擊<strong>「啟動引擎」</strong>按鈕啟用音訊與物理引擎。</li>
+                <li>在黑色的<strong>練習區內點擊</strong>，即可產生一個音符球體。</li>
+                <li>球體撞擊牆壁時：
+                    <ul>
+                        <li><span style="color: var(--primary-neon)">頂部/底部</span>: 大鼓 (Kick)</li>
+                        <li><span style="color: var(--secondary-neon)">左側</span>: 小鼓 (Snare)</li>
+                        <li><span style="color: var(--accent-neon)">右側</span>: Hi-Hat</li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Zero-G Drum Lab. 物理與節奏的完美碰撞。</p>
+    </footer>
+
+    <script src="common.js"></script>
+    <script src="physics.js"></script>
+</body>
+
+</html>

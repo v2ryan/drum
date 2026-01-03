@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基本功道場 | Zero-G Drum Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <div class="logo">Zero-G Drum Lab</div>
+        <ul class="nav-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="rudiments.html">基本功</a></li>
+            <li><a href="theory.html">樂理</a></li>
+            <li><a href="grooves.html">節奏</a></li>
+            <li><a href="sequencer.html">零重力練習器</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="card">
+            <h1>基本功道場 (Rudiments Dojo)</h1>
+            <p>點擊下方的鼓墊，聽聽看實際的節奏演示。確保你的左右手切換準確！</p>
+            <button id="audio-init-btn" style="margin-top: 1rem;">1. 啟用音訊 (Enable Sound)</button>
+        </section>
+
+        <section class="grade-section">
+            <h2>Grade 1: 入門必修</h2>
+            <div class="rudiment-grid">
+                <div class="pad" onclick="playRudiment('single')">
+                    <h3>Single Strokes (單跳)</h3>
+                    <p>最基本的左右交替</p>
+                    <div class="sticking">R L R L</div>
+                </div>
+                <div class="pad" onclick="playRudiment('double')">
+                    <h3>Double Strokes (雙跳)</h3>
+                    <p>每手連擊兩次</p>
+                    <div class="sticking">R R L L</div>
+                </div>
+                <div class="pad" onclick="playRudiment('paradiddle')">
+                    <h3>Paradiddle</h3>
+                    <p>單跳與雙跳的結合</p>
+                    <div class="sticking">R L R R L R L L</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grade-section" style="margin-top: 3rem;">
+            <h2>Grade 2: 進階技巧</h2>
+            <div class="rudiment-grid">
+                <div class="pad" onclick="playRudiment('flam')">
+                    <h3>Flam (裝飾音)</h3>
+                    <p>一輕一重，幾乎同時擊下</p>
+                    <div class="sticking">lR rL</div>
+                </div>
+                <div class="pad" onclick="playRudiment('triplet')">
+                    <h3>Triplets (三連音)</h3>
+                    <p>在一拍內平均分配三下</p>
+                    <div class="sticking">R L R L R L</div>
+                </div>
+                <div class="pad" onclick="playRudiment('accent')">
+                    <h3>Accents (重音)</h3>
+                    <p>強調特定的擊拍</p>
+                    <div class="sticking"><strong>R</strong> L R <strong>L</strong></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Zero-G Drum Lab. 每日基本功，考試沒難度。</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="common.js"></script>
+    <script>
+        let isStarted = false;
+        const snare = new Tone.NoiseSynth({
+            noise: { type: 'white' },
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+        }).toDestination();
+
+        // High frequency "tick" for accents or hi-hat like rudiments
+        const tick = new Tone.MetalSynth({
+            envelope: { attack: 0.001, decay: 0.05, sustain: 0 },
+            frequency: 400
+        }).toDestination();
+
+        document.getElementById('audio-init-btn').addEventListener('click', async () => {
+            await Tone.start();
+            isStarted = true;
+            document.getElementById('audio-init-btn').innerText = "音訊已就緒 ✅";
+            document.getElementById('audio-init-btn').style.background = "#00c853";
+        });
+
+        function playRudiment(type) {
+            if (!isStarted) {
+                alert("請先點擊『啟用音訊』按鈕！");
+                return;
+            }
+
+            const now = Tone.now();
+            const interval = 0.25;
+
+            if (type === 'single') {
+                // R L R L
+                snare.triggerAttackRelease("16n", now, 1);
+                snare.triggerAttackRelease("16n", now + interval, 0.6);
+                snare.triggerAttackRelease("16n", now + interval * 2, 1);
+                snare.triggerAttackRelease("16n", now + interval * 3, 0.6);
+            } else if (type === 'double') {
+                // R R L L
+                snare.triggerAttackRelease("16n", now, 1);
+                snare.triggerAttackRelease("16n", now + interval * 0.5, 0.8);
+                snare.triggerAttackRelease("16n", now + interval, 0.6);
+                snare.triggerAttackRelease("16n", now + interval * 1.5, 0.5);
+            } else if (type === 'paradiddle') {
+                // R L R R L R L L
+                const pInterval = 0.2;
+                const pattern = [1, 0.6, 0.8, 0.8, 1, 0.6, 0.8, 0.8];
+                pattern.forEach((vel, i) => {
+                    snare.triggerAttackRelease("16n", now + i * pInterval, vel);
+                });
+            } else if (type === 'flam') {
+                // lR rL
+                snare.triggerAttackRelease("32n", now, 0.3); // grace note
+                snare.triggerAttackRelease("16n", now + 0.05, 1); // main note
+
+                snare.triggerAttackRelease("32n", now + interval, 0.3);
+                snare.triggerAttackRelease("16n", now + interval + 0.05, 1);
+            } else if (type === 'triplet') {
+                // R L R L R L (3-lets)
+                const tInterval = 0.15;
+                for (let i = 0; i < 6; i++) {
+                    snare.triggerAttackRelease("16n", now + i * tInterval, i % 3 === 0 ? 1 : 0.6);
+                }
+            } else if (type === 'accent') {
+                // R l r L
+                snare.triggerAttackRelease("16n", now, 1.2);
+                snare.triggerAttackRelease("16n", now + interval, 0.3);
+                snare.triggerAttackRelease("16n", now + interval * 2, 0.3);
+                snare.triggerAttackRelease("16n", now + interval * 3, 1.2);
+            }
+        }
+    </script>
+</body>
+
+</html>
